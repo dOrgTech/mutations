@@ -21,6 +21,7 @@ export interface MutationsModule<
 > {
   resolvers: MutationResolvers<TConfig, TState, TEventMap>
   config: TConfig
+  schema: string
   stateBuilder?: StateBuilder<TState, TEventMap>
 }
 
@@ -33,17 +34,20 @@ export interface MutationContext<
   graph: {
     config: ConfigProperties<TConfig>
     state: StateUpdater<TState, TEventMap>
+    client: QueryClient
   }
 }
 
-export interface InternalMutationContext<
+export type InternalMutationContext<
   TConfig extends ConfigGenerators,
   TState = MutationState<CoreState>,
   TEventMap extends EventTypeMap = CoreEvents
-> extends MutationContext<TConfig, TState, TEventMap> {
-  _mutationsCalled: string[]
-  _rootSubject?: MutationStatesSubject<TState, TEventMap>
-  _mutationSubjects: MutationStateSubjects<TState, TEventMap>
+> = MutationContext<TConfig, TState, TEventMap> & {
+  graph: {
+    mutationsCalled: string[]
+    rootSubject?: MutationStatesSubject<TState, TEventMap>
+    mutationSubjects: MutationStateSubjects<TState, TEventMap>
+  }
 }
 
 export interface MutationResolvers<
@@ -64,12 +68,11 @@ export interface MutationQuery<
   TEventMap extends EventTypeMap = CoreEvents
 > {
   query: DocumentNode
-  variables: Record<string, any>
-  operationName: string
+  variables?: Record<string, any>
   extensions?: Record<string, any>
   setContext: (context: any) => any
   getContext: () => any
- stateSubject?: MutationStatesSubject<TState, TEventMap>
+  stateSubject?: MutationStatesSubject<TState, TEventMap>
 }
 
 export type MutationResult = ExecutionResult
@@ -81,4 +84,15 @@ export interface Mutations<
 > {
   execute: (query: MutationQuery<TState, TEventMap>) => Promise<MutationResult>
   configure: (config: ConfigArguments<TConfig>) => Promise<void>
+}
+
+export interface Query {
+  query: DocumentNode
+  variables?: Record<string, any>
+}
+
+export type QueryResult = ExecutionResult
+
+export interface QueryClient {
+  query(query: Query): Promise<QueryResult>
 }

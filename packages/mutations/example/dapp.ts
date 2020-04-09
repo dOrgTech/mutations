@@ -1,6 +1,5 @@
 import {
   createMutations,
-  createMutationsLink,
   Event,
   MutationContext,
   MutationStates,
@@ -26,13 +25,9 @@ const mutations = createMutations({
   },
 })
 
-// Create an ApolloLink to execute the mutations
-const link = createMutationsLink({ mutations })
-
-// Execute a mutation without Apollo
 const EXAMPLE = gql`
   mutation Example($input: String!) {
-    example(input: $input) @client {
+    example(input: $input) {
       output
     }
   }
@@ -72,12 +67,11 @@ const main = async () => {
     variables: {
       input: '...',
     },
-    operationName: 'mutation',
     setContext: (newContext: Context) => {
       context = newContext
       return context
     },
     getContext: () => context,
-   stateSubject: subject,
+    stateSubject: subject,
   })
 }
